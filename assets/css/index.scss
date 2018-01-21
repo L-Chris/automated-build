@@ -1,0 +1,23 @@
+
+ .tu {
+	 &-container {
+		 flex-direction: column;
+	 }
+	 &-head {
+    display: flex;
+    align-items: center;
+    .el-input {
+      width: auto;
+      margin-right: 1rem;
+    }
+	 }
+	 &-main {
+	 }
+	 &-foot {
+    text-align: right;
+  }
+ }
+
+ #__layout, #__nuxt {
+   height: 100%;
+ }
