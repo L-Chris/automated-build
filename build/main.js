@@ -118,7 +118,7 @@ const host = process.env.HOST || '127.0.0.1';
 const port = process.env.PORT || __WEBPACK_IMPORTED_MODULE_2__config__["a" /* default */].server.port;
 const isProd = "development" === 'production';
 
-let nuxtConfig = __webpack_require__(13);
+let nuxtConfig = __webpack_require__(14);
 nuxtConfig.dev = !(app.env === 'production');
 
 const nuxt = new __WEBPACK_IMPORTED_MODULE_1_nuxt__["Nuxt"](nuxtConfig);
@@ -130,7 +130,7 @@ if (nuxtConfig.dev) {
 
 Object(__WEBPACK_IMPORTED_MODULE_3__middlewares__["a" /* default */])(app);
 app.use(__WEBPACK_IMPORTED_MODULE_4__routes__["a" /* default */].routes());
-app.use(ctx => {
+app.use(async (ctx, next) => {
   ctx.status = 200;
   return new Promise((resolve, reject) => {
     ctx.res.on('close', resolve);
@@ -249,7 +249,7 @@ router.use('/project', __WEBPACK_IMPORTED_MODULE_1__children_project__["a" /* de
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_koa_router___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_koa_router__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_simple_git_promise__ = __webpack_require__(12);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_simple_git_promise___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_simple_git_promise__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__const__ = __webpack_require__(15);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__const__ = __webpack_require__(13);
 
 
 
@@ -259,9 +259,7 @@ const router = __WEBPACK_IMPORTED_MODULE_1_koa_router___default()();
 const initRepo = (git, remote) => git.init().then(() => git.addRemote('origin', remote));
 const findRepoBranch = async project => {
   const inst = __WEBPACK_IMPORTED_MODULE_2_simple_git_promise___default()(`./projects/${project.id}`);
-  let { all, current } = await inst.checkIsRepo().then(isRepo => !isRepo && initRepo(inst, project.url))
-  // .then(() => inst.fetch())
-  .then(() => inst.branch());
+  let { all, current } = await inst.checkIsRepo().then(isRepo => !isRepo && initRepo(inst, project.url)).then(() => inst.branch());
   return Object.assign({}, project, {
     current,
     branchList: all
@@ -271,7 +269,7 @@ const findRepoBranch = async project => {
 router.get('/list', async (ctx, next) => {
   ctx.type = 'json';
   let content = [];
-  let list = await Promise.all(__WEBPACK_IMPORTED_MODULE_3__const__["a" /* projects */].map(_ => findRepoBranch(_)));
+  let list = await Promise.all(__WEBPACK_IMPORTED_MODULE_3__const__["b" /* projects */].map(_ => findRepoBranch(_)));
   ctx.body = {
     content: list,
     number: 1,
@@ -279,14 +277,13 @@ router.get('/list', async (ctx, next) => {
     size: 10,
     totalElements: 10
   };
-  console.log(ctx.body);
 });
 
 router.get('/build', async (ctx, next) => {
   ctx.type = 'json';
   let { id } = ctx.query;
   let message;
-  const project = __WEBPACK_IMPORTED_MODULE_3__const__["a" /* projects */].find(_ => _.id === id);
+  const project = __WEBPACK_IMPORTED_MODULE_3__const__["b" /* projects */].find(_ => _.id === id);
   try {
     const inst = __WEBPACK_IMPORTED_MODULE_2_simple_git_promise___default()(`./projects/${project.id}`);
     // init reposity
@@ -299,6 +296,18 @@ router.get('/build', async (ctx, next) => {
   }
   ctx.body = message;
 });
+
+router.get('/backup/list', async (ctx, next) => {
+  ctx.type = 'json';
+  ctx.body = {
+    content: __WEBPACK_IMPORTED_MODULE_3__const__["a" /* backups */],
+    number: 1,
+    total: 1,
+    size: 10,
+    totalElements: 10
+  };
+});
+
 /* harmony default export */ __webpack_exports__["a"] = (router);
 
 /***/ }),
@@ -315,6 +324,19 @@ module.exports = require("simple-git/promise");
 
 /***/ }),
 /* 13 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+const projects = [{ id: '1', name: 'tvi-trace-oa', url: 'https://gitee.com/tvi-center/tvi-trace-oa', backup: { id: '1', name: '2018-01-27', date: '2018-01-27' } }, { id: '2', name: 'tvi-trace-admin', url: 'https://gitee.com/tvi-center/tvi-trace-admin', backup: { id: '1', name: '2018-01-27', date: '2018-01-27' } }];
+/* harmony export (immutable) */ __webpack_exports__["b"] = projects;
+
+
+const backups = [{ id: '1', name: '2018-01-27', date: '2018-01-27' }, { id: '2', name: '2018-01-28', date: '2018-01-28' }];
+/* harmony export (immutable) */ __webpack_exports__["a"] = backups;
+
+
+/***/ }),
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = {
@@ -325,6 +347,18 @@ module.exports = {
     title: 'nuxt-element-demo',
     meta: [{ charset: 'utf-8' }, { name: 'viewport', content: 'width=device-width, initial-scale=1' }, { hid: 'description', name: 'description', content: 'Nuxt.js + element-ui DEMO' }],
     link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }]
+  },
+  modules: ['@nuxtjs/axios'],
+  axios: {
+    baseURL: `${process.env.HOST_URL}/api`,
+    browserBaseURL: '/api',
+    requestInterceptor: config => config,
+    responseInterceptor: ({ data }, ctx) => {
+      if (data.status === 200) {
+        return data.data;
+      }
+      return Promise.reject(data.message);
+    }
   },
   build: {
     vendor: ['element-ui', 'axios'],
@@ -352,7 +386,7 @@ module.exports = {
         name: 'fonts/[name].[hash:7].[ext]'
       }
     }],
-    postcss: [__webpack_require__(14)({
+    postcss: [__webpack_require__(15)({
       browsers: ['last 3 versions']
     })]
   },
@@ -365,19 +399,10 @@ module.exports = {
 };
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, exports) {
 
 module.exports = require("autoprefixer");
-
-/***/ }),
-/* 15 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-const projects = [{ id: '1', name: 'tvi-trace-oa', url: 'https://gitee.com/tvi-center/tvi-trace-oa' }];
-/* harmony export (immutable) */ __webpack_exports__["a"] = projects;
-
 
 /***/ })
 /******/ ]);

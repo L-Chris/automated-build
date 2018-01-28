@@ -9,10 +9,12 @@
         <ElTableColumn type="index" label="序号" align="center" width="100"/>
         <ElTableColumn prop="name" label="名称" align="center"/>
         <ElTableColumn prop="current" label="当前分支" align="center"/>
+        <ElTableColumn prop="backup.name" label="当前备份" align="center"/>
         <ElTableColumn label="操作" align="center" width="280">
           <template slot-scope="scope">
-            <EditButton size="mini" @click.native="handleEdit(scope.row)"/>
+            <EditButton size="mini" title="编辑" @click.native="handleEdit(scope.row)"/>
             <EditButton size="mini" title="构建" @click.native="handleBuild(scope.row)"/>
+            <EditButton size="mini" title="还原" @click.native="handleRestore(scope.row)"/>
           </template>
         </ElTableColumn>
       </ElTable>
@@ -28,6 +30,7 @@
       />
     </ElFooter>
     <EditDialog :visible.sync="editDialogVisible" :formData.sync="projectInfo" @post:user="saveUser"/>
+    <RestoreDialog :visible.sync="restoreDialogVisible" :formData.sync="projectInfo"/>
   </ElContainer>
 </template>
 
@@ -35,20 +38,21 @@
 import SearchButton from '~/components/button/SearchButton'
 import EditButton from '~/components/button/EditButton'
 import EditDialog from './children/EditDialog'
-import User from '~/services/models/User'
-import axios from '~/services'
+import RestoreDialog from './children/RestoreDialog'
+import Project from '~/services/models/Project'
 export default {
-  components: {
-    SearchButton, EditButton, EditDialog
-  },
-  async asyncData ({ params }) {
-    let tableData = await axios.get(`/project/list`)
+  async asyncData ({ app }) {
+    let tableData = await Project.find()
     return {
       tableData
     }
   },
+  components: {
+    SearchButton, EditButton, EditDialog, RestoreDialog
+  },
   data () {
     return {
+      tableData: {},
       params: {
         userName: '',
         roleName: '',
@@ -57,28 +61,32 @@ export default {
         size: 10
       },
       projectInfo: {
-        usrId: '',
-        usrName: '',
-        roleId: '',
-        roleName: ''
+        id: '',
+        name: '',
+        url: '',
+        backup: {}
       },
-      editDialogVisible: false
+      editDialogVisible: false,
+      restoreDialogVisible: false
     }
   },
   methods: {
-    handleBuild ({id}) {
-      axios.get('/project/build', {
-        params: {
-          id
-        }
-      })
+    selectProject (row) {
+      Object.assign(this.projectInfo, row)
+    },
+    async handleBuild ({id}) {
+      await Project.build({id})
+    },
+    handleRestore (row) {
+      this.selectProject(row)
+      this.restoreDialogVisible = true
     },
     async loadData (params = this.params) {
-      this.tableData = await User.find(params)
+      this.tableData = await Project.find(params)
     },
     async saveUser () {
       const {usrId: userId, roleId} = this.projectInfo
-      await User.save({userId, roleId}).then(res => {
+      await Project.save({userId, roleId}).then(res => {
         this.loadData()
         this.editDialogVisible = false
         this.$message.success('保存成功')
@@ -91,9 +99,8 @@ export default {
       this.loadData(this.params)
     },
     handleEdit (row) {
+      this.selectProject(row)
       this.editDialogVisible = true
-      let {usrId, usrName, roleId, roleName} = row
-      Object.assign(this.projectInfo, {usrId, usrName, roleId, roleName})
     },
     handleSizeChange (size) {
       this.params.size = size

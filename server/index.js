@@ -22,7 +22,7 @@ if (nuxtConfig.dev) {
 
 middlewares(app)
 app.use(router.routes())
-app.use(ctx => {
+app.use(async (ctx, next) => {
   ctx.status = 200
   return new Promise((resolve, reject) => {
     ctx.res.on('close', resolve)

@@ -1,7 +1,6 @@
 import axios from '~/services'
 import {BaseURL, ReadOnly} from '~/utils/decorators'
-
-@BaseURL('/api/n')
+@BaseURL('/api')
 class Base {
   constructor (id = '') {
     this.id = id
@@ -52,6 +51,5 @@ class Base {
   }
 }
 
-Base.$name = ''
 Base.$http = axios
 export default Base

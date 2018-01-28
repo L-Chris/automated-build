@@ -1,16 +1,15 @@
 <template>
   <ElDialog class="editDialog"
-    title="编辑项目"
+    title="还原"
     :visible="visible"
     width="33%"
+    @open="handleOpen"
     :before-close="handleClose">
     <ElForm ref="form" label-position="left" label-width="80px" :model="formData" :rules="rules">
-      <ElFormItem label="名称">
-        <ElInput v-model="formData.name"/>
-      </ElFormItem>
-      <ElFormItem label="来源">
-        <ElInput v-model="formData.url"/>
-      </ElFormItem>
+      <ElFormItem label="备份" prop="backup.id" :rules="rules.id" required>
+        <ElSelect v-model="formData.backup.id">
+          <ElOption v-for="v in backups.content" :key="v.id" :label="v.name" :value="v.id"/>
+        </ElSelect>
       </ElFormItem>
     </ElForm>
     <span slot="footer" class="editDialog-footer">
@@ -23,6 +22,7 @@
 <script>
 import SaveButton from '~/components/button/SaveButton'
 import CancelButton from '~/components/button/CancelButton'
+import Project from '~/services/models/Project'
 export default {
   components: {
     SaveButton,
@@ -40,22 +40,20 @@ export default {
   },
   data () {
     return {
-      roleList: [],
+      backups: {},
       rules: {
-        name: {
+        id: {
           required: true,
-          message: '请输入项目名称',
-          trigger: 'blur'
-        },
-        url: {
-          required: true,
-          message: '请输入项目来源',
+          message: '请选择备份',
           trigger: 'blur'
         }
       }
     }
   },
   methods: {
+    async handleOpen () {
+      this.backups = await Project.findBackup()
+    },
     handleClose () {
       this.$emit('update:visible', false)
     },

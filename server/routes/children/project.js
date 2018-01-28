@@ -1,7 +1,7 @@
 import fs from 'fs'
 import Router from 'koa-router'
 import git from 'simple-git/promise'
-import {projects} from '../../const'
+import {projects, backups} from '../../const'
 const router = Router()
 
 const initRepo = (git, remote) => git.init().then(() => git.addRemote('origin', remote))
@@ -9,7 +9,6 @@ const findRepoBranch = async project => {
   const inst = git(`./projects/${project.id}`)
   let {all, current} = await inst.checkIsRepo()
     .then(isRepo => !isRepo && initRepo(inst, project.url))
-    // .then(() => inst.fetch())
     .then(() => inst.branch())
   return {
     ...project,
@@ -29,7 +28,6 @@ router.get('/list', async (ctx, next) => {
     size: 10,
     totalElements: 10
   }
-  console.log(ctx.body)
 })
 
 router.get('/build', async (ctx, next) => {
@@ -52,4 +50,16 @@ router.get('/build', async (ctx, next) => {
   }
   ctx.body = message
 })
+
+router.get('/backup/list', async (ctx, next) => {
+  ctx.type = 'json'
+  ctx.body = {
+    content: backups,
+    number: 1,
+    total: 1,
+    size: 10,
+    totalElements: 10
+  }
+})
+
 export default router
