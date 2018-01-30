@@ -1,5 +1,6 @@
 import Koa from 'koa'
 import {Nuxt, Builder} from 'nuxt'
+import './mongodb'
 import config from './config'
 import middlewares from './middlewares'
 import router from './routes'

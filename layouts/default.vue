@@ -1,7 +1,8 @@
 <template>
   <ElContainer class="home">
     <ElHeader class="home-head">
-      <img src="~assets/img/logo.png"/>
+      <!-- <img src="~assets/img/logo.png"/> -->
+      <span>自动化构建平台</span>
       <TuHeadIcon :value="user.name" :avatar="user.avatar"/>
     </ElHeader>
     <ElContainer>

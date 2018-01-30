@@ -10,6 +10,12 @@ export default {
     root: './static',
     options: {}
   },
+  mongodb: {
+    name: 'test',
+    url: 'mongodb://localhost:27017/test',
+    account: 'chris',
+    password: '123456'
+  },
   session: {
     secretKey: '123'
   }

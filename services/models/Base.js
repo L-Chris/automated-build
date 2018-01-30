@@ -24,10 +24,9 @@ class Base {
     options = {}
   ) {
     options = Object.assign({
-      baseURL: `${Base.$name}${this.constructor.$name}`,
-      params: data
+      baseURL: `${Base.$name}${this.constructor.$name}`
     }, options)
-    return Base.$http.post(url, {}, options)
+    return Base.$http.post(url, data, options)
   }
   async find (params, _url = '/list') {
     let res = await this.$get(_url, params)

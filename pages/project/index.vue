@@ -1,8 +1,9 @@
 <template>
   <ElContainer class="user tu-container">
     <ElHeader class="tu-head">
-      <ElInput v-model="params.userName" placeholder="项目名称"/>
+      <ElInput v-model="params.name" placeholder="项目名称"/>
       <SearchButton @click.native="handleSearch"/>
+      <AddButton @click.native="handleAdd"/>
     </ElHeader>
     <ElMain class="tu-main">
       <ElTable :data="tableData.content">
@@ -29,15 +30,16 @@
         layout="total, sizes, prev, pager, next, jumper"
       />
     </ElFooter>
-    <EditDialog :visible.sync="editDialogVisible" :formData.sync="projectInfo" @post:user="saveUser"/>
+    <SettingDialog :visible.sync="editDialogVisible" :formData.sync="projectInfo" @post:user="saveUser"/>
     <RestoreDialog :visible.sync="restoreDialogVisible" :formData.sync="projectInfo"/>
   </ElContainer>
 </template>
 
 <script>
 import SearchButton from '~/components/button/SearchButton'
+import AddButton from '~/components/button/AddButton'
 import EditButton from '~/components/button/EditButton'
-import EditDialog from './children/EditDialog'
+import SettingDialog from './children/SettingDialog'
 import RestoreDialog from './children/RestoreDialog'
 import Project from '~/services/models/Project'
 export default {
@@ -48,16 +50,14 @@ export default {
     }
   },
   components: {
-    SearchButton, EditButton, EditDialog, RestoreDialog
+    SearchButton, AddButton, EditButton, SettingDialog, RestoreDialog
   },
   data () {
     return {
       tableData: {},
       params: {
-        userName: '',
-        roleName: '',
-        mobile: '',
-        currentPage: 1,
+        name: '',
+        page: 1,
         size: 10
       },
       projectInfo: {
@@ -85,8 +85,7 @@ export default {
       this.tableData = await Project.find(params)
     },
     async saveUser () {
-      const {usrId: userId, roleId} = this.projectInfo
-      await Project.save({userId, roleId}).then(res => {
+      await Project.save(this.projectInfo).then(res => {
         this.loadData()
         this.editDialogVisible = false
         this.$message.success('保存成功')
@@ -102,14 +101,21 @@ export default {
       this.selectProject(row)
       this.editDialogVisible = true
     },
+    handleAdd () {
+      let row = {
+        id: '',
+        name: '',
+        url: ''
+      }
+      this.handleEdit(row)
+    },
     handleSizeChange (size) {
       this.params.size = size
-      this.params.currentPage = 1
+      this.params.page = 1
       this.loadData()
     },
     handleCurrentChange (page) {
-      let currentPage = page
-      this.params.currentPage = currentPage
+      this.params.page = page
       this.loadData()
     }
   }

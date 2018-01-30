@@ -11,7 +11,6 @@
       <ElFormItem label="来源">
         <ElInput v-model="formData.url"/>
       </ElFormItem>
-      </ElFormItem>
     </ElForm>
     <span slot="footer" class="editDialog-footer">
       <CancelButton @click.native="handleClose"/>
@@ -40,7 +39,6 @@ export default {
   },
   data () {
     return {
-      roleList: [],
       rules: {
         name: {
           required: true,

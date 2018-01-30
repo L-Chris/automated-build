@@ -14,7 +14,7 @@ class Project extends Base {
     this.backup = args.backup
   }
 
-  find ({page = 1, size = 10, name} = {}) {
+  find ({page = 1, size = 10, name = ''} = {}) {
     return super.find({page, size, name})
   }
   findBackup ({page = 1, size = 10} = {}) {
@@ -23,8 +23,8 @@ class Project extends Base {
   build ({id}) {
     return super.$get('/build', {id})
   }
-  save ({id, name}) {
-    return super.save({id, name})
+  save ({id, name, url}) {
+    return super.save({id, name, url})
   }
 }
 export default new Project({

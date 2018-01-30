@@ -62,14 +62,14 @@ module.exports =
 /******/ 	__webpack_require__.p = "/";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 2);
+/******/ 	return __webpack_require__(__webpack_require__.s = 3);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
 /***/ (function(module, exports) {
 
-module.exports = require("koa-router");
+module.exports = require("mongoose");
 
 /***/ }),
 /* 1 */
@@ -88,6 +88,12 @@ module.exports = require("koa-router");
     root: './static',
     options: {}
   },
+  mongodb: {
+    name: 'test',
+    url: 'mongodb://localhost:27017/test',
+    account: 'chris',
+    password: '123456'
+  },
   session: {
     secretKey: '123'
   }
@@ -95,17 +101,25 @@ module.exports = require("koa-router");
 
 /***/ }),
 /* 2 */
+/***/ (function(module, exports) {
+
+module.exports = require("koa-router");
+
+/***/ }),
+/* 3 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_koa__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_koa__ = __webpack_require__(4);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_koa___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_koa__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_nuxt__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_nuxt__ = __webpack_require__(5);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_nuxt___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_nuxt__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__config__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__middlewares__ = __webpack_require__(5);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__routes__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__mongodb__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__config__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__middlewares__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__routes__ = __webpack_require__(10);
+
 
 
 
@@ -115,10 +129,10 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 const app = new __WEBPACK_IMPORTED_MODULE_0_koa___default.a();
 
 const host = process.env.HOST || '127.0.0.1';
-const port = process.env.PORT || __WEBPACK_IMPORTED_MODULE_2__config__["a" /* default */].server.port;
+const port = process.env.PORT || __WEBPACK_IMPORTED_MODULE_3__config__["a" /* default */].server.port;
 const isProd = "development" === 'production';
 
-let nuxtConfig = __webpack_require__(14);
+let nuxtConfig = __webpack_require__(20);
 nuxtConfig.dev = !(app.env === 'production');
 
 const nuxt = new __WEBPACK_IMPORTED_MODULE_1_nuxt__["Nuxt"](nuxtConfig);
@@ -128,8 +142,8 @@ if (nuxtConfig.dev) {
   builder.build();
 }
 
-Object(__WEBPACK_IMPORTED_MODULE_3__middlewares__["a" /* default */])(app);
-app.use(__WEBPACK_IMPORTED_MODULE_4__routes__["a" /* default */].routes());
+Object(__WEBPACK_IMPORTED_MODULE_4__middlewares__["a" /* default */])(app);
+app.use(__WEBPACK_IMPORTED_MODULE_5__routes__["a" /* default */].routes());
 app.use(async (ctx, next) => {
   ctx.status = 200;
   return new Promise((resolve, reject) => {
@@ -143,25 +157,49 @@ app.use(async (ctx, next) => {
 app.listen(port, host);
 
 /***/ }),
-/* 3 */
+/* 4 */
 /***/ (function(module, exports) {
 
 module.exports = require("koa");
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, exports) {
 
 module.exports = require("nuxt");
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_koa_bodyparser__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_mongoose__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_mongoose___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_mongoose__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__config__ = __webpack_require__(1);
+
+
+
+__WEBPACK_IMPORTED_MODULE_0_mongoose___default.a.connect(__WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].mongodb.url);
+const db = __WEBPACK_IMPORTED_MODULE_0_mongoose___default.a.connection;
+
+db.on('error', err => {
+  console.log('数据库连接失败：' + err);
+});
+db.once('open', () => {
+  console.log('数据库连接成功');
+});
+db.on('disconnected', () => {
+  console.log('数据哭连接断开');
+});
+
+/***/ }),
+/* 7 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_koa_bodyparser__ = __webpack_require__(8);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_koa_bodyparser___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_koa_bodyparser__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_koa_json__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_koa_json__ = __webpack_require__(9);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_koa_json___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_koa_json__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__config__ = __webpack_require__(1);
 
@@ -195,25 +233,25 @@ module.exports = require("nuxt");
 });
 
 /***/ }),
-/* 6 */
+/* 8 */
 /***/ (function(module, exports) {
 
 module.exports = require("koa-bodyparser");
 
 /***/ }),
-/* 7 */
+/* 9 */
 /***/ (function(module, exports) {
 
 module.exports = require("koa-json");
 
 /***/ }),
-/* 8 */
+/* 10 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_koa_router__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_koa_router__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_koa_router___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_koa_router__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__api__ = __webpack_require__(9);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__api__ = __webpack_require__(11);
 
 
 const router = __WEBPACK_IMPORTED_MODULE_0_koa_router___default()();
@@ -223,13 +261,13 @@ router.use('/api', __WEBPACK_IMPORTED_MODULE_1__api__["a" /* default */].routes(
 /* harmony default export */ __webpack_exports__["a"] = (router);
 
 /***/ }),
-/* 9 */
+/* 11 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_koa_router__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_koa_router__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_koa_router___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_koa_router__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__children_project__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__children_project__ = __webpack_require__(12);
 
 
 const router = __WEBPACK_IMPORTED_MODULE_0_koa_router___default()();
@@ -239,26 +277,64 @@ router.use('/project', __WEBPACK_IMPORTED_MODULE_1__children_project__["a" /* de
 /* harmony default export */ __webpack_exports__["a"] = (router);
 
 /***/ }),
-/* 10 */
+/* 12 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_fs__ = __webpack_require__(11);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_koa_router__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_koa_router___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_koa_router__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__controllers_project__ = __webpack_require__(13);
+
+
+const router = __WEBPACK_IMPORTED_MODULE_0_koa_router___default()();
+
+router.get('/list', __WEBPACK_IMPORTED_MODULE_1__controllers_project__["a" /* default */].find);
+router.get('/get', __WEBPACK_IMPORTED_MODULE_1__controllers_project__["a" /* default */].findOne);
+router.post('/save', __WEBPACK_IMPORTED_MODULE_1__controllers_project__["a" /* default */].save);
+// router.get('/build', async (ctx, next) => {
+//   ctx.type = 'json'
+//   let {id} = ctx.query
+//   let message
+//   const project = projects.find(_ => _.id === id)
+//   try {
+//     const inst = git(`./projects/${project.id}`)
+//     // init reposity
+//     await inst.checkIsRepo()
+//       .then(isRepo => !isRepo && initRepo(inst, project.url))
+//       .then(() => inst.fetch())
+//       // .then(() => inst.pull('origin', 'develop'))
+//     message = await inst.branch()
+//   }
+//   catch (e) {
+//     console.error('failed: ', e)
+//     message = 'error'
+//   }
+//   ctx.body = message
+// })
+
+/* harmony default export */ __webpack_exports__["a"] = (router);
+
+/***/ }),
+/* 13 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_fs__ = __webpack_require__(14);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_fs___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_fs__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_koa_router__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_koa_router___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_koa_router__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_simple_git_promise__ = __webpack_require__(12);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_simple_git_promise___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_simple_git_promise__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__const__ = __webpack_require__(13);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_simple_git_promise__ = __webpack_require__(15);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_simple_git_promise___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_simple_git_promise__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__const__ = __webpack_require__(16);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__mongodb_models_project__ = __webpack_require__(17);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__base__ = __webpack_require__(19);
 
 
 
 
-const router = __WEBPACK_IMPORTED_MODULE_1_koa_router___default()();
+
 
 const initRepo = (git, remote) => git.init().then(() => git.addRemote('origin', remote));
 const findRepoBranch = async project => {
-  const inst = __WEBPACK_IMPORTED_MODULE_2_simple_git_promise___default()(`./projects/${project.id}`);
+  const inst = __WEBPACK_IMPORTED_MODULE_1_simple_git_promise___default()(`./projects/${project.id}`);
   let { all, current } = await inst.checkIsRepo().then(isRepo => !isRepo && initRepo(inst, project.url)).then(() => inst.branch());
   return Object.assign({}, project, {
     current,
@@ -266,64 +342,74 @@ const findRepoBranch = async project => {
   });
 };
 
-router.get('/list', async (ctx, next) => {
-  ctx.type = 'json';
-  let content = [];
-  let list = await Promise.all(__WEBPACK_IMPORTED_MODULE_3__const__["b" /* projects */].map(_ => findRepoBranch(_)));
-  ctx.body = {
-    content: list,
-    number: 1,
-    total: 1,
-    size: 10,
-    totalElements: 10
-  };
-});
+class ProjectController extends __WEBPACK_IMPORTED_MODULE_4__base__["a" /* default */] {
+  constructor(params) {
+    super(params);
 
-router.get('/build', async (ctx, next) => {
-  ctx.type = 'json';
-  let { id } = ctx.query;
-  let message;
-  const project = __WEBPACK_IMPORTED_MODULE_3__const__["b" /* projects */].find(_ => _.id === id);
-  try {
-    const inst = __WEBPACK_IMPORTED_MODULE_2_simple_git_promise___default()(`./projects/${project.id}`);
-    // init reposity
-    await inst.checkIsRepo().then(isRepo => !isRepo && initRepo(inst, project.url)).then(() => inst.fetch());
-    // .then(() => inst.pull('origin', 'develop'))
-    message = await inst.branch();
-  } catch (e) {
-    console.error('failed: ', e);
-    message = 'error';
+    this.name = params.name;
+    this.url = params.url;
   }
-  ctx.body = message;
-});
+  // 保存项目信息
+  static async save(ctx, next) {
+    let requestBody = ctx.request.body;
+    let { id: _id, name, url } = requestBody;
+    let data = await __WEBPACK_IMPORTED_MODULE_3__mongodb_models_project__["a" /* default */].findOneAndUpdate({ _id }, { name, url }, { new: true, upsert: true });
+    ctx.body = data;
+  }
+  // 删除项目信息
+  static async remove(ctx, next) {
+    let { id: _id } = ctx.params;
+    let res = await __WEBPACK_IMPORTED_MODULE_3__mongodb_models_project__["a" /* default */].remove({ _id });
+    ctx.body = res;
+  }
+  // 获取项目信息
+  static async findOne(ctx, next) {
+    let { id: _id } = ctx.params;
+    let res = await __WEBPACK_IMPORTED_MODULE_3__mongodb_models_project__["a" /* default */].findOne({ _id });
+    ctx.body = res;
+  }
+  // 获取项目列表
+  static async find(ctx, next) {
+    let { name = '' } = ctx.query;
+    let res = await __WEBPACK_IMPORTED_MODULE_3__mongodb_models_project__["a" /* default */].find({ name: `/${name}/` });
+    console.log(res);
+    let content = await Promise.all(__WEBPACK_IMPORTED_MODULE_2__const__["b" /* projects */].filter(_ => _.name.includes(name)).map(_ => findRepoBranch(_)));
+    ctx.body = {
+      content,
+      number: 1,
+      total: 1,
+      size: 10,
+      totalElements: 10
+    };
+  }
+  // 获取项目备份列表
+  static async findBackUp(ctx, next) {
+    ctx.body = {
+      content: __WEBPACK_IMPORTED_MODULE_2__const__["a" /* backups */],
+      number: 1,
+      total: 1,
+      size: 10,
+      totalElements: 10
+    };
+  }
+}
 
-router.get('/backup/list', async (ctx, next) => {
-  ctx.type = 'json';
-  ctx.body = {
-    content: __WEBPACK_IMPORTED_MODULE_3__const__["a" /* backups */],
-    number: 1,
-    total: 1,
-    size: 10,
-    totalElements: 10
-  };
-});
-
-/* harmony default export */ __webpack_exports__["a"] = (router);
+/* harmony default export */ __webpack_exports__["a"] = (ProjectController);
 
 /***/ }),
-/* 11 */
+/* 14 */
 /***/ (function(module, exports) {
 
 module.exports = require("fs");
 
 /***/ }),
-/* 12 */
+/* 15 */
 /***/ (function(module, exports) {
 
 module.exports = require("simple-git/promise");
 
 /***/ }),
-/* 13 */
+/* 16 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -336,7 +422,52 @@ const backups = [{ id: '1', name: '2018-01-27', date: '2018-01-27' }, { id: '2',
 
 
 /***/ }),
-/* 14 */
+/* 17 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_mongoose__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_mongoose___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_mongoose__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__schemas_project__ = __webpack_require__(18);
+
+
+
+const Project = __WEBPACK_IMPORTED_MODULE_0_mongoose___default.a.model('Project', __WEBPACK_IMPORTED_MODULE_1__schemas_project__["a" /* default */]);
+
+/* harmony default export */ __webpack_exports__["a"] = (Project);
+
+/***/ }),
+/* 18 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_mongoose__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_mongoose___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_mongoose__);
+
+const Schema = __WEBPACK_IMPORTED_MODULE_0_mongoose___default.a.Schema;
+
+const Project = new Schema({
+	name: { type: String },
+	url: { type: String }
+});
+
+/* harmony default export */ __webpack_exports__["a"] = (Project);
+
+/***/ }),
+/* 19 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+class BaseController {
+	constructor({ id }) {
+		this.id = id;
+	}
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (BaseController);
+
+/***/ }),
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = {
@@ -347,18 +478,6 @@ module.exports = {
     title: 'nuxt-element-demo',
     meta: [{ charset: 'utf-8' }, { name: 'viewport', content: 'width=device-width, initial-scale=1' }, { hid: 'description', name: 'description', content: 'Nuxt.js + element-ui DEMO' }],
     link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }]
-  },
-  modules: ['@nuxtjs/axios'],
-  axios: {
-    baseURL: `${process.env.HOST_URL}/api`,
-    browserBaseURL: '/api',
-    requestInterceptor: config => config,
-    responseInterceptor: ({ data }, ctx) => {
-      if (data.status === 200) {
-        return data.data;
-      }
-      return Promise.reject(data.message);
-    }
   },
   build: {
     vendor: ['element-ui', 'axios'],
@@ -386,7 +505,7 @@ module.exports = {
         name: 'fonts/[name].[hash:7].[ext]'
       }
     }],
-    postcss: [__webpack_require__(15)({
+    postcss: [__webpack_require__(21)({
       browsers: ['last 3 versions']
     })]
   },
@@ -399,7 +518,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 15 */
+/* 21 */
 /***/ (function(module, exports) {
 
 module.exports = require("autoprefixer");
