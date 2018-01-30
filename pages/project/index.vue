@@ -1,5 +1,5 @@
 <template>
-  <ElContainer class="user tu-container">
+  <ElContainer class="project tu-container">
     <ElHeader class="tu-head">
       <ElInput v-model="params.name" placeholder="项目名称"/>
       <SearchButton @click.native="handleSearch"/>
@@ -16,6 +16,7 @@
             <EditButton size="mini" title="编辑" @click.native="handleEdit(scope.row)"/>
             <EditButton size="mini" title="构建" @click.native="handleBuild(scope.row)"/>
             <EditButton size="mini" title="还原" @click.native="handleRestore(scope.row)"/>
+            <DeleteButton size="mini" @click.native="handleDelete(scope.row)"/>
           </template>
         </ElTableColumn>
       </ElTable>
@@ -30,8 +31,8 @@
         layout="total, sizes, prev, pager, next, jumper"
       />
     </ElFooter>
-    <SettingDialog :visible.sync="editDialogVisible" :formData.sync="projectInfo" @post:user="saveUser"/>
-    <RestoreDialog :visible.sync="restoreDialogVisible" :formData.sync="projectInfo"/>
+    <SettingDialog :visible.sync="editDialogVisible" :formData.sync="projectInfo" @post:project="saveProject"/>
+    <RestoreDialog :visible.sync="restoreDialogVisible" :formData.sync="backupInfo" @post:backup="setBackup"/>
   </ElContainer>
 </template>
 
@@ -39,6 +40,7 @@
 import SearchButton from '~/components/button/SearchButton'
 import AddButton from '~/components/button/AddButton'
 import EditButton from '~/components/button/EditButton'
+import DeleteButton from '~/components/button/DeleteButton'
 import SettingDialog from './children/SettingDialog'
 import RestoreDialog from './children/RestoreDialog'
 import Project from '~/services/models/Project'
@@ -50,7 +52,7 @@ export default {
     }
   },
   components: {
-    SearchButton, AddButton, EditButton, SettingDialog, RestoreDialog
+    SearchButton, AddButton, EditButton, DeleteButton, SettingDialog, RestoreDialog
   },
   data () {
     return {
@@ -66,6 +68,10 @@ export default {
         url: '',
         backup: {}
       },
+      backupInfo: {
+        id: '',
+        projectId: ''
+      },
       editDialogVisible: false,
       restoreDialogVisible: false
     }
@@ -79,13 +85,27 @@ export default {
     },
     handleRestore (row) {
       this.selectProject(row)
+      this.backupInfo.id = row.backup && row.backup.id
+      this.backupInfo.projectId = row.id
       this.restoreDialogVisible = true
     },
     async loadData (params = this.params) {
       this.tableData = await Project.find(params)
     },
-    async saveUser () {
+    async saveProject () {
       await Project.save(this.projectInfo).then(res => {
+        this.loadData()
+        this.editDialogVisible = false
+        this.$message.success('保存成功')
+      }).catch(err => {
+        this.$message.error('保存失败')
+        console.log(err)
+      })
+    },
+    async setBackup () {
+      let {id} = this.projectInfo
+      let {id: backupId} = this.backupInfo
+      await Project.setBackup({id, backupId}).then(res => {
         this.loadData()
         this.editDialogVisible = false
         this.$message.success('保存成功')
@@ -105,9 +125,13 @@ export default {
       let row = {
         id: '',
         name: '',
-        url: ''
+        url: '',
+        backup: {}
       }
       this.handleEdit(row)
+    },
+    handleDelete ({id}) {
+      Project.delete({id})
     },
     handleSizeChange (size) {
       this.params.size = size
@@ -123,6 +147,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.user {
+.project {
 }
 </style>

@@ -59,7 +59,7 @@ export default {
     },
     async handleSave (formName) {
       this.$refs[formName].validate(valid => {
-        this.$emit('post:user')
+        this.$emit('post:project')
       })
     }
   }

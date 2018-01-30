@@ -5,6 +5,9 @@ const router = Router()
 router.get('/list', ProjectController.find)
 router.get('/get', ProjectController.findOne)
 router.post('/save', ProjectController.save)
+router.post('/delete/:id', ProjectController.remove)
+router.get('/backup/list', ProjectController.findBackUp)
+router.post('/backup/update', ProjectController.setBackup)
 // router.get('/build', async (ctx, next) => {
 //   ctx.type = 'json'
 //   let {id} = ctx.query

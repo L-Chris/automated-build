@@ -45,8 +45,8 @@ class Base {
   save (data, _url = '/save', options) {
     return this.$post(_url, data, options)
   }
-  delete (data, _url = '/delete', options) {
-    return this.$post(_url, data, options)
+  delete ({id}, _url = '/delete', options) {
+    return this.$post(`${_url}/${id}`, {}, options)
   }
 }
 

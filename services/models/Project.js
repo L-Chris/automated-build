@@ -17,14 +17,20 @@ class Project extends Base {
   find ({page = 1, size = 10, name = ''} = {}) {
     return super.find({page, size, name})
   }
-  findBackup ({page = 1, size = 10} = {}) {
-    return super.find({page, size}, '/backup/list')
+  findBackup ({id, page = 1, size = 10} = {}) {
+    return super.find({id, page, size}, '/backup/list')
+  }
+  setBackup ({id, backupId}) {
+    return super.$post('/backup/update', {id, backupId})
   }
   build ({id}) {
     return super.$get('/build', {id})
   }
   save ({id, name, url}) {
     return super.save({id, name, url})
+  }
+  delete ({id}) {
+    return super.delete({id})
   }
 }
 export default new Project({

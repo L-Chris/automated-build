@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "axios": "^0.17.1",
+    "cuid": "^2.0.2",
     "element-ui": "^2.0.11",
     "koa": "^2.4.1",
     "koa-bodyparser": "^4.2.0",

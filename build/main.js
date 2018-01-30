@@ -132,7 +132,7 @@ const host = process.env.HOST || '127.0.0.1';
 const port = process.env.PORT || __WEBPACK_IMPORTED_MODULE_3__config__["a" /* default */].server.port;
 const isProd = "development" === 'production';
 
-let nuxtConfig = __webpack_require__(20);
+let nuxtConfig = __webpack_require__(23);
 nuxtConfig.dev = !(app.env === 'production');
 
 const nuxt = new __WEBPACK_IMPORTED_MODULE_1_nuxt__["Nuxt"](nuxtConfig);
@@ -291,6 +291,9 @@ const router = __WEBPACK_IMPORTED_MODULE_0_koa_router___default()();
 router.get('/list', __WEBPACK_IMPORTED_MODULE_1__controllers_project__["a" /* default */].find);
 router.get('/get', __WEBPACK_IMPORTED_MODULE_1__controllers_project__["a" /* default */].findOne);
 router.post('/save', __WEBPACK_IMPORTED_MODULE_1__controllers_project__["a" /* default */].save);
+router.post('/delete/:id', __WEBPACK_IMPORTED_MODULE_1__controllers_project__["a" /* default */].remove);
+router.get('/backup/list', __WEBPACK_IMPORTED_MODULE_1__controllers_project__["a" /* default */].findBackUp);
+router.post('/backup/update', __WEBPACK_IMPORTED_MODULE_1__controllers_project__["a" /* default */].setBackup);
 // router.get('/build', async (ctx, next) => {
 //   ctx.type = 'json'
 //   let {id} = ctx.query
@@ -323,9 +326,14 @@ router.post('/save', __WEBPACK_IMPORTED_MODULE_1__controllers_project__["a" /* d
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_fs___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_fs__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_simple_git_promise__ = __webpack_require__(15);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_simple_git_promise___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_simple_git_promise__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__const__ = __webpack_require__(16);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__mongodb_models_project__ = __webpack_require__(17);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__base__ = __webpack_require__(19);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_cuid__ = __webpack_require__(16);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_cuid___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_cuid__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__const__ = __webpack_require__(17);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__mongodb_models_project__ = __webpack_require__(18);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__mongodb_models_backup__ = __webpack_require__(20);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__base__ = __webpack_require__(22);
+
+
 
 
 
@@ -334,7 +342,11 @@ router.post('/save', __WEBPACK_IMPORTED_MODULE_1__controllers_project__["a" /* d
 
 const initRepo = (git, remote) => git.init().then(() => git.addRemote('origin', remote));
 const findRepoBranch = async project => {
-  const inst = __WEBPACK_IMPORTED_MODULE_1_simple_git_promise___default()(`./projects/${project.id}`);
+  const path = `./projects/${project.id}`;
+  if (!__WEBPACK_IMPORTED_MODULE_0_fs___default.a.existsSync(path)) {
+    __WEBPACK_IMPORTED_MODULE_0_fs___default.a.mkdirSync(path);
+  }
+  const inst = __WEBPACK_IMPORTED_MODULE_1_simple_git_promise___default()(path);
   let { all, current } = await inst.checkIsRepo().then(isRepo => !isRepo && initRepo(inst, project.url)).then(() => inst.branch());
   return Object.assign({}, project, {
     current,
@@ -342,7 +354,7 @@ const findRepoBranch = async project => {
   });
 };
 
-class ProjectController extends __WEBPACK_IMPORTED_MODULE_4__base__["a" /* default */] {
+class ProjectController extends __WEBPACK_IMPORTED_MODULE_6__base__["a" /* default */] {
   constructor(params) {
     super(params);
 
@@ -352,28 +364,28 @@ class ProjectController extends __WEBPACK_IMPORTED_MODULE_4__base__["a" /* defau
   // 保存项目信息
   static async save(ctx, next) {
     let requestBody = ctx.request.body;
-    let { id: _id, name, url } = requestBody;
-    let data = await __WEBPACK_IMPORTED_MODULE_3__mongodb_models_project__["a" /* default */].findOneAndUpdate({ _id }, { name, url }, { new: true, upsert: true });
+    let { id, name, url } = requestBody;
+    id = id || __WEBPACK_IMPORTED_MODULE_2_cuid___default()();
+    let data = await __WEBPACK_IMPORTED_MODULE_4__mongodb_models_project__["a" /* default */].findOneAndUpdate({ id }, { id, name, url }, { new: true, upsert: true });
     ctx.body = data;
   }
   // 删除项目信息
   static async remove(ctx, next) {
-    let { id: _id } = ctx.params;
-    let res = await __WEBPACK_IMPORTED_MODULE_3__mongodb_models_project__["a" /* default */].remove({ _id });
+    let { id } = ctx.params;
+    let res = await __WEBPACK_IMPORTED_MODULE_4__mongodb_models_project__["a" /* default */].remove({ id });
     ctx.body = res;
   }
   // 获取项目信息
   static async findOne(ctx, next) {
-    let { id: _id } = ctx.params;
-    let res = await __WEBPACK_IMPORTED_MODULE_3__mongodb_models_project__["a" /* default */].findOne({ _id });
+    let { id } = ctx.params;
+    let res = await __WEBPACK_IMPORTED_MODULE_4__mongodb_models_project__["a" /* default */].findOne({ id });
     ctx.body = res;
   }
   // 获取项目列表
   static async find(ctx, next) {
     let { name = '' } = ctx.query;
-    let res = await __WEBPACK_IMPORTED_MODULE_3__mongodb_models_project__["a" /* default */].find({ name: `/${name}/` });
-    console.log(res);
-    let content = await Promise.all(__WEBPACK_IMPORTED_MODULE_2__const__["b" /* projects */].filter(_ => _.name.includes(name)).map(_ => findRepoBranch(_)));
+    let content = await __WEBPACK_IMPORTED_MODULE_4__mongodb_models_project__["a" /* default */].find({ name: new RegExp(name) });
+    content = await Promise.all(content.map(_ => findRepoBranch(_._doc)));
     ctx.body = {
       content,
       number: 1,
@@ -384,13 +396,22 @@ class ProjectController extends __WEBPACK_IMPORTED_MODULE_4__base__["a" /* defau
   }
   // 获取项目备份列表
   static async findBackUp(ctx, next) {
+    let { id } = ctx.query;
+    let content = await __WEBPACK_IMPORTED_MODULE_5__mongodb_models_backup__["a" /* default */].find({ projectId: id });
     ctx.body = {
-      content: __WEBPACK_IMPORTED_MODULE_2__const__["a" /* backups */],
+      content,
       number: 1,
       total: 1,
       size: 10,
       totalElements: 10
     };
+  }
+  static async setBackup(ctx, next) {
+    let requestBody = ctx.request.body;
+    let { id, backupId } = requestBody;
+    let backup = await __WEBPACK_IMPORTED_MODULE_5__mongodb_models_backup__["a" /* default */].findOne({ id: backupId, projectId: id });
+    let res = await __WEBPACK_IMPORTED_MODULE_4__mongodb_models_project__["a" /* default */].findOneAndUpdate({ id }, { $set: { backup } });
+    ctx.body = res;
   }
 }
 
@@ -410,25 +431,31 @@ module.exports = require("simple-git/promise");
 
 /***/ }),
 /* 16 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
+/***/ (function(module, exports) {
 
-"use strict";
-const projects = [{ id: '1', name: 'tvi-trace-oa', url: 'https://gitee.com/tvi-center/tvi-trace-oa', backup: { id: '1', name: '2018-01-27', date: '2018-01-27' } }, { id: '2', name: 'tvi-trace-admin', url: 'https://gitee.com/tvi-center/tvi-trace-admin', backup: { id: '1', name: '2018-01-27', date: '2018-01-27' } }];
-/* harmony export (immutable) */ __webpack_exports__["b"] = projects;
-
-
-const backups = [{ id: '1', name: '2018-01-27', date: '2018-01-27' }, { id: '2', name: '2018-01-28', date: '2018-01-28' }];
-/* harmony export (immutable) */ __webpack_exports__["a"] = backups;
-
+module.exports = require("cuid");
 
 /***/ }),
 /* 17 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+const projects = [{ id: '1', name: 'tvi-trace-oa', url: 'https://gitee.com/tvi-center/tvi-trace-oa' }, { id: '2', name: 'tvi-trace-admin', url: 'https://gitee.com/tvi-center/tvi-trace-admin' }];
+/* unused harmony export projects */
+
+
+const backups = [{ id: '1', name: '2018-01-27', date: '2018-01-27' }, { id: '2', name: '2018-01-28', date: '2018-01-28' }];
+/* unused harmony export backups */
+
+
+/***/ }),
+/* 18 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_mongoose__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_mongoose___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_mongoose__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__schemas_project__ = __webpack_require__(18);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__schemas_project__ = __webpack_require__(19);
 
 
 
@@ -437,7 +464,7 @@ const Project = __WEBPACK_IMPORTED_MODULE_0_mongoose___default.a.model('Project'
 /* harmony default export */ __webpack_exports__["a"] = (Project);
 
 /***/ }),
-/* 18 */
+/* 19 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -447,14 +474,58 @@ const Project = __WEBPACK_IMPORTED_MODULE_0_mongoose___default.a.model('Project'
 const Schema = __WEBPACK_IMPORTED_MODULE_0_mongoose___default.a.Schema;
 
 const Project = new Schema({
+	id: { type: String, unique: true },
 	name: { type: String },
-	url: { type: String }
+	url: { type: String },
+	backup: {
+		id: String,
+		name: String,
+		createTime: Date
+	}
 });
 
 /* harmony default export */ __webpack_exports__["a"] = (Project);
 
 /***/ }),
-/* 19 */
+/* 20 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_mongoose__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_mongoose___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_mongoose__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__schemas_backup__ = __webpack_require__(21);
+
+
+
+const Backup = __WEBPACK_IMPORTED_MODULE_0_mongoose___default.a.model('Backup', __WEBPACK_IMPORTED_MODULE_1__schemas_backup__["a" /* default */]);
+
+/* harmony default export */ __webpack_exports__["a"] = (Backup);
+
+/***/ }),
+/* 21 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_mongoose__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_mongoose___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_mongoose__);
+
+const Schema = __WEBPACK_IMPORTED_MODULE_0_mongoose___default.a.Schema;
+
+const Backup = new Schema({
+  id: { type: String, unique: true },
+  projectId: { type: String },
+  name: { type: String },
+  branch: {
+    id: String,
+    name: String
+  },
+  createTime: { type: Date }
+});
+
+/* harmony default export */ __webpack_exports__["a"] = (Backup);
+
+/***/ }),
+/* 22 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -467,7 +538,7 @@ class BaseController {
 /* harmony default export */ __webpack_exports__["a"] = (BaseController);
 
 /***/ }),
-/* 20 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = {
@@ -505,7 +576,7 @@ module.exports = {
         name: 'fonts/[name].[hash:7].[ext]'
       }
     }],
-    postcss: [__webpack_require__(21)({
+    postcss: [__webpack_require__(24)({
       browsers: ['last 3 versions']
     })]
   },
@@ -518,7 +589,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 21 */
+/* 24 */
 /***/ (function(module, exports) {
 
 module.exports = require("autoprefixer");
