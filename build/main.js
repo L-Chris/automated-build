@@ -268,11 +268,14 @@ router.use('/api', __WEBPACK_IMPORTED_MODULE_1__api__["a" /* default */].routes(
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_koa_router__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_koa_router___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_koa_router__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__children_project__ = __webpack_require__(12);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__children_user__ = __webpack_require__(25);
+
 
 
 const router = __WEBPACK_IMPORTED_MODULE_0_koa_router___default()();
 
 router.use('/project', __WEBPACK_IMPORTED_MODULE_1__children_project__["a" /* default */].routes(), __WEBPACK_IMPORTED_MODULE_1__children_project__["a" /* default */].allowedMethods());
+router.use('/user', __WEBPACK_IMPORTED_MODULE_2__children_user__["a" /* default */].routes(), __WEBPACK_IMPORTED_MODULE_2__children_user__["a" /* default */].allowedMethods());
 
 /* harmony default export */ __webpack_exports__["a"] = (router);
 
@@ -293,7 +296,8 @@ router.get('/get', __WEBPACK_IMPORTED_MODULE_1__controllers_project__["a" /* def
 router.post('/save', __WEBPACK_IMPORTED_MODULE_1__controllers_project__["a" /* default */].save);
 router.post('/delete/:id', __WEBPACK_IMPORTED_MODULE_1__controllers_project__["a" /* default */].remove);
 router.get('/backup/list', __WEBPACK_IMPORTED_MODULE_1__controllers_project__["a" /* default */].findBackUp);
-router.post('/backup/update', __WEBPACK_IMPORTED_MODULE_1__controllers_project__["a" /* default */].setBackup);
+router.post('/backup/update', __WEBPACK_IMPORTED_MODULE_1__controllers_project__["a" /* default */].updateBackup);
+router.get('/build', __WEBPACK_IMPORTED_MODULE_1__controllers_project__["a" /* default */].updateBackup);
 // router.get('/build', async (ctx, next) => {
 //   ctx.type = 'json'
 //   let {id} = ctx.query
@@ -406,7 +410,7 @@ class ProjectController extends __WEBPACK_IMPORTED_MODULE_6__base__["a" /* defau
       totalElements: 10
     };
   }
-  static async setBackup(ctx, next) {
+  static async updateBackup(ctx, next) {
     let requestBody = ctx.request.body;
     let { id, backupId } = requestBody;
     let backup = await __WEBPACK_IMPORTED_MODULE_5__mongodb_models_backup__["a" /* default */].findOne({ id: backupId, projectId: id });
@@ -593,6 +597,122 @@ module.exports = {
 /***/ (function(module, exports) {
 
 module.exports = require("autoprefixer");
+
+/***/ }),
+/* 25 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_koa_router__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_koa_router___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_koa_router__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__controllers_user__ = __webpack_require__(26);
+
+
+const router = __WEBPACK_IMPORTED_MODULE_0_koa_router___default()();
+
+router.get('/list', __WEBPACK_IMPORTED_MODULE_1__controllers_user__["a" /* default */].find);
+router.get('/get/:id', __WEBPACK_IMPORTED_MODULE_1__controllers_user__["a" /* default */].findOne);
+router.post('/save', __WEBPACK_IMPORTED_MODULE_1__controllers_user__["a" /* default */].save);
+router.post('/delete/:id', __WEBPACK_IMPORTED_MODULE_1__controllers_user__["a" /* default */].remove);
+
+/* harmony default export */ __webpack_exports__["a"] = (router);
+
+/***/ }),
+/* 26 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_cuid__ = __webpack_require__(16);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_cuid___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_cuid__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__mongodb_models_user__ = __webpack_require__(27);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__base__ = __webpack_require__(22);
+
+
+
+
+class UserController extends __WEBPACK_IMPORTED_MODULE_2__base__["a" /* default */] {
+  constructor(params) {
+    super(params);
+
+    this.account = params.account;
+    this.password = params.password;
+  }
+  // 保存用户信息
+  static async save(ctx, next) {
+    let requestBody = ctx.request.body;
+    let { id, name, avatar } = requestBody;
+    id = id || __WEBPACK_IMPORTED_MODULE_0_cuid___default()();
+    let res = await __WEBPACK_IMPORTED_MODULE_1__mongodb_models_user__["a" /* default */].findOneAndUpdate({ id }, { id, name, avatar }, { new: true, upsert: true });
+    ctx.body = res;
+  }
+  // 删除用户信息
+  static async remove(ctx, next) {
+    let { id } = ctx.params;
+    let res = await __WEBPACK_IMPORTED_MODULE_1__mongodb_models_user__["a" /* default */].remove({ id });
+    ctx.body = res;
+  }
+  // 获取用户信息
+  static async findOne(ctx, next) {
+    let { id } = ctx.params;
+    let res = await __WEBPACK_IMPORTED_MODULE_1__mongodb_models_user__["a" /* default */].findOne({ id });
+    ctx.body = res;
+  }
+  // 获取用户列表
+  static async find(ctx, next) {
+    let { name } = ctx.query;
+    let content = await __WEBPACK_IMPORTED_MODULE_1__mongodb_models_user__["a" /* default */].find({ name: new RegExp(name) });
+    ctx.body = {
+      content,
+      number: 1,
+      total: 1,
+      size: 10,
+      totalElements: 10
+    };
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (UserController);
+
+/***/ }),
+/* 27 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_mongoose__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_mongoose___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_mongoose__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__schemas_user__ = __webpack_require__(28);
+
+
+
+const User = __WEBPACK_IMPORTED_MODULE_0_mongoose___default.a.model('User', __WEBPACK_IMPORTED_MODULE_1__schemas_user__["a" /* default */]);
+
+/* harmony default export */ __webpack_exports__["a"] = (User);
+
+/***/ }),
+/* 28 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_mongoose__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_mongoose___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_mongoose__);
+
+const Schema = __WEBPACK_IMPORTED_MODULE_0_mongoose___default.a.Schema;
+
+const User = new Schema({
+	id: { type: String, unique: true },
+	account: { type: String, unique: true },
+	password: { type: String },
+	avatar: { type: String },
+	name: { type: String },
+	role: {
+		id: String,
+		name: String,
+		level: Number,
+		modules: Array
+	}
+});
+
+/* harmony default export */ __webpack_exports__["a"] = (User);
 
 /***/ })
 /******/ ]);

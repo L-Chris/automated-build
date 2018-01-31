@@ -24,14 +24,13 @@ class User extends Base {
     let res = await super.$get('/logout')
     return res
   }
-  find ({currentPage = 1, size = 10, userName} = {}) {
-    return super.find({currentPage, size, userName})
+  find ({page = 1, size = 10, name} = {}) {
+    return super.find({page, size, name})
   }
-  save ({userId, roleId}) {
-    return super.save({userId, roleId})
+  save ({id, name, avatar}) {
+    return super.save({id, name, avatar})
   }
   async findCurrent () {
-    // let res = await super.$get('/current')
     let res = {id: 1, name: 'Tricker'}
     let modules = permissionType.map(_ => _.id)
     let permissionMap = permissionType.filter(_ => modules.includes(_.id)).reduce((pre, {name}) => {

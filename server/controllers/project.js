@@ -75,7 +75,7 @@ class ProjectController extends BaseController {
       totalElements: 10
     }
   }
-  static async setBackup (ctx, next) {
+  static async updateBackup (ctx, next) {
     let requestBody = ctx.request.body
     let {id, backupId} = requestBody
     let backup = await Backup.findOne({id: backupId, projectId: id})

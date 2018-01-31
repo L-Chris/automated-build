@@ -35,8 +35,8 @@ class Base {
       content: res.content.map(_ => new this.constructor(_))
     }
   }
-  async findOne (params, _url = '/findOne') {
-    let data = await this.$get(_url, params)
+  async findOne ({id}, _url = '/get') {
+    let data = await this.$get(`${_url}/${id}`)
     return new this.constructor(data)
   }
   add (data, _url = '/add', options) {
