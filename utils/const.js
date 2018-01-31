@@ -31,6 +31,15 @@ export const routes = [
           permission: 'role_view',
           icon: 'icon-role'
         }
+      },
+      {
+        name: '权限管理',
+        path: '/permission',
+        meta: {
+          menu: '4',
+          permission: 'role_view',
+          icon: 'icon-role'
+        }
       }
     ]
   }

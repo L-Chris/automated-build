@@ -9,32 +9,19 @@ class Role extends Base {
 
     this.id = args.id
     this.name = args.name
-    this.moduleIds = args.moduleIds || []
+    this.description = args.description
+    this.level = args.level
     this.modules = args.modules
-    this.modules = initModules(this.modules, this.moduleIds)
-    this.moduleNames = this.modules.filter(_ => this.moduleIds.includes(_.id)).map(_ => _.name).join('，')
-    this.moduleNames = this.modules.map(_ => {
-      return `${_.label}（${_.children.filter(c => c.value).map(c => c.label).join('、')}）`
-    }).join('，')
-    this.desc = args.desc
   }
-  find ({currentPage = 1, size = 10, roleName} = {}) {
-    return super.find({currentPage, size, roleName})
+  find ({page = 1, size = 10, name} = {}) {
+    return super.find({page, size, name})
   }
-  @Memorize()
-  findAllModule () {
-    return this.$get('/getAllModule')
-  }
-  add ({roleName, des, moduleIds = ['']} = {}) {
+  save ({id, name, description, level, moduleIds = ['']} = {}) {
     moduleIds = moduleIds.join(',')
-    return super.add({roleName, des, moduleIds})
+    return super.save({id, name, description, level, moduleIds})
   }
-  save ({roleId, roleName, des, moduleIds = ['']} = {}) {
-    moduleIds = moduleIds.join(',')
-    return super.save({roleId, roleName, des, moduleIds}, '/edit')
-  }
-  delete ({roleId}) {
-    return super.delete({roleId})
+  delete ({id}) {
+    return super.delete({id})
   }
 }
 
@@ -60,8 +47,8 @@ const initModules = (modules, moduleIds) => {
 export default new Role({
   id: '',
   name: '',
-  modules: [],
-  moduleIds: [],
-  desc: ''
+  description: '',
+  level: '',
+  modules: []
 })
 export {Role, initModules}

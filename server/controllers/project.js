@@ -26,9 +26,6 @@ const findRepoBranch = async project => {
 class ProjectController extends BaseController {
   constructor (params) {  
     super(params)
-
-    this.name = params.name
-    this.url = params.url
   }
   // 保存项目信息
   static async save(ctx, next) {
